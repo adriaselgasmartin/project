@@ -1,52 +1,88 @@
-# test_graph.py
-
+from graph import *
+from node import Node
 import os
-from graph import LoadGraphFromFile, Plot, PlotNode
-from node import Node  # Assegura't que la classe Node està definida en node.py
 
 
-def main():
-    # Defineix el nom del fitxer sample
-    sample_filename = "sample_graph.txt"
+def CreateGraph_1():
+    g = Graph()
+    AddNode(g, Node("A", 1, 20))
+    AddNode(g, Node("B", 8, 17))
+    AddNode(g, Node("C", 15, 20))
+    AddNode(g, Node("D", 18, 15))
+    AddNode(g, Node("E", 2, 4))
+    AddNode(g, Node("F", 6, 5))
+    AddNode(g, Node("G", 12, 12))
+    AddNode(g, Node("H", 10, 3))
+    AddNode(g, Node("I", 19, 1))
+    AddNode(g, Node("J", 13, 5))
+    AddNode(g, Node("K", 3, 15))
+    AddNode(g, Node("L", 4, 10))
+    AddSegment(g, "AB", "A", "B")
+    AddSegment(g, "AE", "A", "E")
+    AddSegment(g, "AK", "A", "K")
+    AddSegment(g, "BA", "B", "A")
+    AddSegment(g, "BC", "B", "C")
+    AddSegment(g, "BF", "B", "F")
+    AddSegment(g, "BK", "B", "K")
+    AddSegment(g, "Bg", "B", "g")
+    AddSegment(g, "CD", "C", "D")
+    AddSegment(g, "Cg", "C", "g")
+    AddSegment(g, "Dg", "D", "g")
+    AddSegment(g, "DH", "D", "H")
+    AddSegment(g, "DI", "D", "I")
+    AddSegment(g, "EF", "E", "F")
+    AddSegment(g, "FL", "F", "L")
+    AddSegment(g, "gB", "g", "B")
+    AddSegment(g, "gF", "g", "F")
+    AddSegment(g, "gH", "g", "H")
+    AddSegment(g, "ID", "I", "D")
+    AddSegment(g, "IJ", "I", "J")
+    AddSegment(g, "JI", "J", "I")
+    AddSegment(g, "KA", "K", "A")
+    AddSegment(g, "KL", "K", "L")
+    AddSegment(g, "LK", "L", "K")
+    AddSegment(g, "LF", "L", "F")
+    return g
 
-    # Dades sample per al graf:
-    sample_data = """
-# Exemple de fitxer per carregar un graf
-NODE;A;0;0
-NODE;B;3;4
-NODE;C;6;8
-NODE;D;2;7
-SEGMENT;A;B
-SEGMENT;B;C
-SEGMENT;A;D
-    """
 
-    # Escriu les dades sample al fitxer
-    with open(sample_filename, "w") as f:
-        f.write(sample_data.strip())
-
-    # Carrega el graf des del fitxer
-    g = LoadGraphFromFile(sample_filename)
-
-    # Mostra els nodes carregats
-    print("Nodes carregats:")
-    for node in g.nodes:
-        print(f"{node.name}: ({node.x}, {node.y})")
-
-    # Mostra els segments carregats
-    print("\nSegments carregats:")
-    for seg in g.segments:
-        print(f"{seg.name}: {seg.origin.name} -> {seg.destination.name}, cost = {seg.cost:.2f}")
-
-    # Visualitza el graf complet
-    Plot(g)
-
-    # Visualitza el subgraf per al node "A"
-    PlotNode(g, "A")
-
-    # Neteja el fitxer sample
-    os.remove(sample_filename)
+print("Probando el grafo...")
+g = CreateGraph_1()
+Plot(g)
+PlotNode(g, "C")
+n = GetClosest(g, 15, 5)
+print(n.name)  # La respuesta debe ser J
+n = GetClosest(g, 8, 19)
+print(n.name)  # La respuesta debe ser B
 
 
-if __name__ == '__main__':
-    main()
+def CreateGraph_2():
+    G = Graph()
+    AddNode(G, Node("P", 0, 0))
+    AddNode(G, Node("Q", 10, 0))
+    AddNode(G, Node("R", 5, 10))
+    AddSegment(G, "PQ", "P", "Q")
+    AddSegment(G, "QR", "Q", "R")
+    AddSegment(G, "PR", "P", "R")
+    return G
+
+def test_file_loading():
+    print("Testing file loading...")
+    fileName = "data.txt"
+    G_loaded = LoadGraphFromFile(fileName)
+    if G_loaded:
+        Plot(G_loaded)
+    else:
+        print("Error loading graph from file.")
+    os.remove(fileName)
+
+
+if __name__ == "__main__":
+    print("Probando el grafo...")
+    G = CreateGraph_1()
+    Plot(G)
+    PlotNode(G, "C")
+    n = GetClosest(G, 15, 5)
+    print(n.name)  # La respuesta debe ser J
+    n = GetClosest(G, 8, 19)
+    print(n.name)  # La respuesta debe ser B
+    test_file_loading()

@@ -169,3 +169,31 @@ def LoadGraphFromFile(data):
                 destination_name = parts[2]
                 AddSegment(g, origin_name, destination_name)
     return g
+
+def RemoveNode(g, nodeName):
+    node_to_remove = None
+    for node in g.nodes:
+        if node.name == nodeName:
+            node_to_remove = node
+            break
+    if node_to_remove is None:
+        return False
+    g.nodes.remove(node_to_remove)
+    g.segments = [seg for seg in g.segments if seg.origin != node_to_remove and seg.destination != node_to_remove]
+    for node in g.nodes:
+        if node_to_remove in node.neighbors:
+            node.neighbors.remove(node_to_remove)
+    return True
+
+def SaveGraphToFile(g, filename):
+
+    try:
+        with open(filename, "w") as f:
+            for node in g.nodes:
+                f.write("N,{},{},{}\n".format(node.name, node.x, node.y))
+            for seg in g.segments:
+                f.write("S,{},{},{}\n".format(seg.name, seg.origin.name, seg.destination.name))
+                return True
+    except Exception as e:
+        print("Error saving graph to file:", e)
+        return False

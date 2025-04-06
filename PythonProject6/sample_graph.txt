@@ -1,8 +1,0 @@
-# Exemple de fitxer per carregar un graf
-NODE;A;0;0
-NODE;B;3;4
-NODE;C;6;8
-NODE;D;2;7
-SEGMENT;A;B
-SEGMENT;B;C
-SEGMENT;A;D

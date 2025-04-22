@@ -197,3 +197,8 @@ def SaveGraphToFile(g, filename):
     except Exception as e:
         print("Error saving graph to file:", e)
         return False
+
+def Reachability(g, nodeName):
+    for node in g.nodes:
+        dest= node
+

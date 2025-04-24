@@ -16,7 +16,7 @@ def AddNode (g,n):       #esta funcion revisa si n ya pertenece a la lista g
         return True
 
 
-def AddSegment(g, trajecte, nameOriginNode, nameDestinationNode):
+def AddSegment(g,trajecte, nameOriginNode, nameDestinationNode):
 
     origin = None
     destination = None
@@ -103,7 +103,7 @@ def PlotNode(g, nameOrigin):
     if origin is None:
         return False
 
-    # Si el node d'origen té atribut 'neighbors', els obtenim; altrament, es considera com a buida.
+    # Si el node d'origen té atribut 'neighbors', els obtenim, sino es considera com a buida.
     neighbors = origin.neighbors if hasattr(origin, "neighbors") else []
 
     # Dibuixa tots els nodes amb colors segons la seva relació amb el node d'origen
@@ -162,12 +162,13 @@ def LoadGraphFromFile(data):
                 node = Node(name, x, y)
                 AddNode(g, node)
             elif parts[0].upper() == "SEGMENT":
-                if len(parts) != 3:
+                if len(parts) != 4:
                     print(f"Error de format en línia de segment: {line}")
                     continue
-                origin_name = parts[1]
-                destination_name = parts[2]
-                AddSegment(g, origin_name, destination_name)
+                trajecte = parts[1]
+                origin_name = parts[2]
+                destination_name = parts[3]
+                AddSegment(g, trajecte, origin_name, destination_name)
     return g
 
 def RemoveNode(g, nodeName):
@@ -197,6 +198,20 @@ def SaveGraphToFile(g, filename):
     except Exception as e:
         print("Error saving graph to file:", e)
         return False
+def ReachableNodes(g, originNode):
+    origin = None
+    destination = None
+    for node in g.nodes:
+        if node.name == originNode:
+            origin=node
+
+    if origin is None:
+        return False
+
+    if hasattr(origin, "neighbors"):
+        origin.neighbors.append(destination)
+    else:
+        origin.neighbors = [destination]
 
 def Reachability(g, nodeName):
     for node in g.nodes:

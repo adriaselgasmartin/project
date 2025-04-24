@@ -1,11 +1,12 @@
 import tkinter as tk
+import matplotlib.pyplot as plt
 from tkinter import filedialog, simpledialog, messagebox
 from graph import Graph, LoadGraphFromFile, SaveGraphToFile, AddNode, AddSegment, RemoveNode, Plot, PlotNode
 from test_graph import CreateGraph_1, CreateGraph_2
 from node import Node
 from path import Reachability, FindShortestPath, PlotPath
 
-# Global variable to hold the current graph.
+
 current_graph = None
 
 
@@ -168,8 +169,6 @@ def show_reachability():
     if not reachable:
         messagebox.showinfo("Reachability", f"No nodes reachable from {name}.")
         return
-    # Plot reachability: origin in blue, reachable in green, others grey
-    import matplotlib.pyplot as plt
     for node in current_graph.nodes:
         if node.name == name:
             plt.plot(node.x, node.y, 'bo')
@@ -178,7 +177,6 @@ def show_reachability():
         else:
             plt.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='gray', markeredgecolor='gray')
         plt.text(node.x, node.y, f' {node.name}', color='black')
-    # draw segments among reachable
     for seg in current_graph.segments:
         if seg.origin.name == name and seg.destination in reachable or (seg.origin in reachable and seg.destination in reachable):
             plt.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'r-')
@@ -202,7 +200,6 @@ def show_shortest_path():
     else:
         PlotPath(current_graph, path)
 
-# Main GUI window
 root = tk.Tk()
 root.title("Graph Editor v2")
 

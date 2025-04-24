@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from graph import Graph, LoadGraphFromFile, SaveGraphToFile, AddNode, AddSegment, RemoveNode, Plot, PlotNode
-from test_graph import CreateGraph_1, CreateGraph_2
+from test_graph import *
 from node import Node
 
 # Global variable to hold the current graph.

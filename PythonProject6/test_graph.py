@@ -2,7 +2,7 @@ from graph import *
 from node import Node
 import os
 
-
+g=None
 def CreateGraph_1():
     g = Graph()
     AddNode(g, Node("A", 1, 20))

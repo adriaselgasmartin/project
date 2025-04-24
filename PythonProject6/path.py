@@ -11,9 +11,6 @@ class Path:
 
 
 def AddNodeToPath(path, node, graph):
-    """
-    Returns a new Path extended by node, computing added cost from graph.segments.
-    """
     prev = path.last_node()
     added_cost = 0.0
     if prev:
@@ -48,11 +45,9 @@ def PlotPath(graph, path):
     import matplotlib.pyplot as plt
     if not path.nodes:
         return False
-    # Draw all nodes in light gray
     for node in graph.nodes:
         plt.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='lightgray', markeredgecolor='gray')
         plt.text(node.x, node.y, f' {node.name}', color='gray', fontsize=9)
-    # Draw path segments in red
     xs = [n.x for n in path.nodes]
     ys = [n.y for n in path.nodes]
     plt.plot(xs, ys, '-o', linewidth=2, markersize=6)
@@ -71,9 +66,6 @@ def PlotPath(graph, path):
 
 
 def Reachability(graph, nodeName):
-    """
-    Returns list of Nodes reachable from nodeName (excluding origin).
-    """
     start = next((n for n in graph.nodes if n.name == nodeName), None)
     if start is None:
         return []
@@ -92,9 +84,6 @@ def Reachability(graph, nodeName):
 
 
 def FindShortestPath(graph, originName, destinationName):
-    """
-    A* algorithm returning a Path or None.
-    """
     origin = next((n for n in graph.nodes if n.name == originName), None)
     dest = next((n for n in graph.nodes if n.name == destinationName), None)
     if origin is None or dest is None:
@@ -120,7 +109,6 @@ def FindShortestPath(graph, originName, destinationName):
             new_path = Path(path.nodes + [nb], new_cost)
             if nb in closed:
                 continue
-            # remove any existing open path ending at nb with higher cost
             open_paths = [(e,p) for e,p in open_paths if not (p.last_node() == nb and p.cost > new_cost)]
             open_paths.append((new_cost + heuristic(nb, dest), new_path))
     return None

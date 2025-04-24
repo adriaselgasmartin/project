@@ -45,15 +45,6 @@ def CreateGraph_1():
     return g
 
 
-print("Probando el grafo...")
-g = CreateGraph_1()
-Plot(g)
-PlotNode(g, "C")
-n = GetClosest(g, 15, 5)
-print(n.name)  # La respuesta debe ser J
-n = GetClosest(g, 8, 19)
-print(n.name)  # La respuesta debe ser B
-
 
 def CreateGraph_2():
     G = Graph()

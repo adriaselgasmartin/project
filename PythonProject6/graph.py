@@ -149,17 +149,18 @@ def LoadGraphFromFile(data):
                 continue
             parts = line.split(';')
             if parts[0].upper() == "NODE":
-                if len(parts) != 4:
+                if len(parts) != 5:
                     print(f"Error de format en línia de node: {line}")
                     continue
                 name = parts[1]
                 try:
                     x = float(parts[2])
                     y = float(parts[3])
+                    type = str(parts[4])
                 except ValueError:
                     print(f"Error de conversió en línia: {line}")
                     continue
-                node = Node(name, x, y)
+                node = Node(name, x, y, type)
                 AddNode(g, node)
             elif parts[0].upper() == "SEGMENT":
                 if len(parts) != 4:
@@ -213,7 +214,4 @@ def ReachableNodes(g, originNode):
     else:
         origin.neighbors = [destination]
 
-def Reachability(g, nodeName):
-    for node in g.nodes:
-        dest= node
 

@@ -25,9 +25,6 @@ def ContainsNode(path, node):
 
 
 def CostToNode(path, node, graph):
-    """
-    Returns total cost along path to node, or -1 if node not in path.
-    """
     if node in path.nodes:
         idx = path.nodes.index(node)
         total = 0.0

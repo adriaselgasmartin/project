@@ -200,6 +200,8 @@ def show_shortest_path():
     else:
         PlotPath(current_graph, path)
 
+
+
 root = tk.Tk()
 root.title("Graph Editor v2")
 

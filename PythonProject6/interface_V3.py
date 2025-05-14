@@ -14,9 +14,9 @@ current_graph = None
 def load_catalunya_data():
     air = AirSpace()
     try:
-        air.load_nav_points("Cat_nav.txt")
-        air.load_nav_segments("Cat_seg.txt")
-        air.load_airports("Cat_aer.txt")
+        air.load_nav_points("Nav.txt")
+        air.load_nav_segments("Seg.txt")
+        air.load_airports("Aer.txt")
         messagebox.showinfo("Datos cargados", "Datos de Catalunya cargados correctamente.")
         return air
     except Exception as e:
@@ -56,31 +56,6 @@ def cargar_y_mostrar():
     if airspace:
         plot_airspace(airspace)
 
-def mostrar_vecinos():
-    global airspace
-    if airspace is None:
-        messagebox.showwarning("Cargar primero", "Primero carga los datos de Catalunya.")
-        return
-
-    nombre = simpledialog.askstring("NavPoint", "Introduce el nombre del punto de navegación (ej. GODOX):")
-    if not nombre:
-        return
-
-
-    puntos = {p.name: p.number for p in airspace.nav_points}
-    if nombre not in puntos:
-        messagebox.showerror("No encontrado", f"{nombre} no está en los datos.")
-        return
-
-    id_punto = puntos[nombre]
-    vecinos = []
-    for seg in airspace.nav_segments:
-        if seg.origin_number == id_punto:
-            vecinos.append(seg.destination_number)
-
-    id_to_name = {p.number: p.name for p in airspace.nav_points}
-    vecinos_nombres = [id_to_name.get(nid, str(nid)) for nid in vecinos]
-    messagebox.showinfo("Vecinos", f"Vecinos de {nombre}:\n" + ", ".join(vecinos_nombres))
 
 def airspace_to_graph(airspace: AirSpace) -> Graph:
     g = Graph()
@@ -257,7 +232,7 @@ def show_reachability():
     if not reachable:
         messagebox.showinfo("Reachability", f"No nodes reachable from {name}.")
         return
-    # Plot reachability: origin in blue, reachable in green, others grey
+
     import matplotlib.pyplot as plt
     for node in current_graph.nodes:
         if node.name == name:
@@ -265,9 +240,8 @@ def show_reachability():
         elif node in reachable:
             plt.plot(node.x, node.y, 'go')
         else:
-            plt.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='gray', markeredgecolor='gray')
+            plt.plot(node.x, node.y, 'o', markersize=4, markerfacecolor='none', markeredgecolor='none')
         plt.text(node.x, node.y, f' {node.name}', color='black')
-    # draw segments among reachable
     for seg in current_graph.segments:
         if seg.origin.name == name and seg.destination in reachable or (seg.origin in reachable and seg.destination in reachable):
             plt.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'r-')
@@ -293,7 +267,7 @@ def show_shortest_path():
 
 # Main GUI window
 root = tk.Tk()
-root.title("Graph Editor v2")
+root.title("Graph Editor v3")
 
 btn_example = tk.Button(root, text="Show Example Graph", width=30, command=show_example_graph)
 btn_example.pack(padx=5, pady=5)
@@ -328,13 +302,14 @@ btn_design.pack(padx=5, pady=5)
 btn_save = tk.Button(root, text="Save Graph to File", width=30, command=save_graph)
 btn_save.pack(padx=5, pady=5)
 
+btn_cargar = tk.Button(root, text="Load Airspace data", width=30, command=cargar_y_mostrar)
+btn_cargar.pack(pady=5)
+
 btn_quit = tk.Button(root, text="Quit", width=30, command=root.quit)
 btn_quit.pack(padx=5, pady=5)
 
-btn_cargar = tk.Button(root, text="Cargar datos Catalunya", width=30, command=cargar_y_mostrar)
-btn_cargar.pack(pady=5)
 
-btn_vecinos = tk.Button(root, text="Ver vecinos de NavPoint", width=30, command=mostrar_vecinos)
-btn_vecinos.pack(pady=5)
+
+
 
 root.mainloop()

@@ -16,7 +16,7 @@ def AddNode (g,n):       #esta funcion revisa si n ya pertenece a la lista g
         return True
 
 
-def AddSegment(g,trajecte, nameOriginNode, nameDestinationNode):
+def AddSegment(g, nameOriginNode, nameDestinationNode):
 
     origin = None
     destination = None

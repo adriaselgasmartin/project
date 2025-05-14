@@ -9,11 +9,7 @@ from navPoint import NavPoint
 from navSegment import NavSegment
 from navAirport import NavAirport
 import matplotlib.pyplot as plt
-
-
-
 current_graph = None
-
 
 def load_catalunya_data():
     air = AirSpace()
@@ -31,17 +27,19 @@ def plot_airspace(airspace: AirSpace):
     fig, ax = plt.subplots()
     id_to_point = {np.number: np for np in airspace.nav_points}
 
-    # Dibujar puntos
+
     for np in airspace.nav_points:
         ax.plot(np.longitude, np.latitude, 'ko')
         ax.text(np.longitude, np.latitude, np.name, fontsize=6)
 
-    # Dibujar segmentos
+
     for seg in airspace.nav_segments:
         if seg.origin_number in id_to_point and seg.destination_number in id_to_point:
             origin = id_to_point[seg.origin_number]
             dest = id_to_point[seg.destination_number]
-            ax.plot([origin.longitude, dest.longitude], [origin.latitude, dest.latitude], 'b-', alpha=0.5)
+            dx = dest.longitude - origin.longitude
+            dy = dest.latitude - origin.latitude
+            plt.arrow(origin.longitude, origin.latitude, dx, dy,length_includes_head=True, head_width=0.07, head_length=0.07, color='c')
 
     ax.set_title("Airspace - Catalunya")
     plt.xlabel("Longitud")
@@ -54,10 +52,9 @@ def cargar_y_mostrar():
     global airspace
     global current_graph
     airspace = load_catalunya_data()
-    current_graph=airspace
+    current_graph = airspace_to_graph(airspace)
     if airspace:
         plot_airspace(airspace)
-
 
 def mostrar_vecinos():
     global airspace
@@ -85,22 +82,20 @@ def mostrar_vecinos():
     vecinos_nombres = [id_to_name.get(nid, str(nid)) for nid in vecinos]
     messagebox.showinfo("Vecinos", f"Vecinos de {nombre}:\n" + ", ".join(vecinos_nombres))
 
-def busqueda_parcial():
-    global current_graph
-    name = simpledialog.askstring("Input", "Escribe nombre parcial:")
-    if not name:
-        return
+def airspace_to_graph(airspace: AirSpace) -> Graph:
+    g = Graph()
+    id_to_node = {}
 
-    current_graph = CreateGraph_2()
+    for navpoint in airspace.nav_points:
+        node = Node(navpoint.name, navpoint.longitude, navpoint.latitude)
+        AddNode(g, node)
+        id_to_node[navpoint.number] = node
 
-    matching_nodes = [node.name for node in current_graph.nodes if node.name.startswith(name)]
+    for seg in airspace.nav_segments:
+        if seg.origin_number in id_to_node and seg.destination_number in id_to_node:
+            AddSegment(g, id_to_node[seg.origin_number].name, id_to_node[seg.destination_number].name)
 
-    if matching_nodes:
-        messagebox.showinfo("Matching Nodes", f"Nodes matching '{name}':\n" + "\n".join(matching_nodes))
-        Plot(matching_nodes)
-    else:
-        messagebox.showinfo("No Matches", f"No nodes found starting with '{name}'.")
-
+    return g
 
 def show_example_graph():
     global current_graph
@@ -128,6 +123,7 @@ def load_graph_from_file():
 
 def show_node_neighbors():
     global current_graph
+    global airspace
     if current_graph is None:
         messagebox.showwarning("Warning", "No graph loaded.")
         return

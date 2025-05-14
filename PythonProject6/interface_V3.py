@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from graph import Graph, LoadGraphFromFile, SaveGraphToFile, AddNode, AddSegment, RemoveNode, Plot, PlotNode
-from test_graph import CreateGraph_1, CreateGraph_2, montgraph
+from test_graph import CreateGraph_1, CreateGraph_2
 from node import Node
 from path import Reachability, FindShortestPath, PlotPath
 from airSpace import AirSpace
@@ -52,9 +52,12 @@ airspace = None  # Variable global
 
 def cargar_y_mostrar():
     global airspace
+    global current_graph
     airspace = load_catalunya_data()
+    current_graph=airspace
     if airspace:
         plot_airspace(airspace)
+
 
 def mostrar_vecinos():
     global airspace
@@ -66,7 +69,7 @@ def mostrar_vecinos():
     if not nombre:
         return
 
-    # Buscar punto y vecinos
+
     puntos = {p.name: p.number for p in airspace.nav_points}
     if nombre not in puntos:
         messagebox.showerror("No encontrado", f"{nombre} no está en los datos.")
@@ -332,13 +335,10 @@ btn_save.pack(padx=5, pady=5)
 btn_quit = tk.Button(root, text="Quit", width=30, command=root.quit)
 btn_quit.pack(padx=5, pady=5)
 
-btn_busqueda_parcial = tk.Button(root, text="Busqueda nombre parcial", width=30, command=busqueda_parcial)
-btn_busqueda_parcial.pack(padx=5, pady=5)
-
-btn_cargar = tk.Button(root, text="Cargar datos Catalunya", command=cargar_y_mostrar)
+btn_cargar = tk.Button(root, text="Cargar datos Catalunya", width=30, command=cargar_y_mostrar)
 btn_cargar.pack(pady=5)
 
-btn_vecinos = tk.Button(root, text="Ver vecinos de NavPoint", command=mostrar_vecinos)
+btn_vecinos = tk.Button(root, text="Ver vecinos de NavPoint", width=30, command=mostrar_vecinos)
 btn_vecinos.pack(pady=5)
 
 root.mainloop()

@@ -1,5 +1,6 @@
 from graph import Graph
 import math
+import matplotlib.pyplot as plt
 
 class Path:
     def __init__(self, nodes=None, cost=0.0):
@@ -39,7 +40,6 @@ def CostToNode(path, node, graph):
 
 
 def PlotPath(graph, path):
-    import matplotlib.pyplot as plt
     if not path.nodes:
         return False
     for node in graph.nodes:

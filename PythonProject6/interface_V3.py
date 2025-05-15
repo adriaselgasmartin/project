@@ -5,9 +5,6 @@ from test_graph import CreateGraph_1, CreateGraph_2
 from node import Node
 from path import Reachability, FindShortestPath, PlotPath
 from airSpace import AirSpace
-from navPoint import NavPoint
-from navSegment import NavSegment
-from navAirport import NavAirport
 import matplotlib.pyplot as plt
 current_graph = None
 
@@ -30,7 +27,7 @@ def plot_airspace(airspace: AirSpace):
 
     for np in airspace.nav_points:
         ax.plot(np.longitude, np.latitude, 'ko')
-        ax.text(np.longitude, np.latitude, np.name, fontsize=6)
+        ax.text(np.longitude, np.latitude, np.name, fontsize=5)
 
 
     for seg in airspace.nav_segments:
@@ -222,6 +219,10 @@ def design_graph():
 
 def show_reachability():
     global current_graph
+    reach=[]
+    plt.clf()
+    plt.grid(True)
+
     if current_graph is None:
         messagebox.showwarning("Warning", "No graph loaded.")
         return
@@ -232,26 +233,30 @@ def show_reachability():
     if not reachable:
         messagebox.showinfo("Reachability", f"No nodes reachable from {name}.")
         return
+    for node in current_graph.nodes:
+        plt.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='lightgray', markeredgecolor='gray')
+        plt.text(node.x, node.y, f' {node.name}', color='gray', fontsize=9)
 
-    import matplotlib.pyplot as plt
     for node in current_graph.nodes:
         if node.name == name:
             plt.plot(node.x, node.y, 'bo')
         elif node in reachable:
+            reach.append(node)
             plt.plot(node.x, node.y, 'go')
         else:
             plt.plot(node.x, node.y, 'o', markersize=4, markerfacecolor='none', markeredgecolor='none')
-        plt.text(node.x, node.y, f' {node.name}', color='black')
+
     for seg in current_graph.segments:
         if seg.origin.name == name and seg.destination in reachable or (seg.origin in reachable and seg.destination in reachable):
             plt.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'r-')
-    plt.title(f'Reachable from {name}')
-    plt.grid(True)
+
     plt.show()
 
 
 def show_shortest_path():
     global current_graph
+    plt.clf()
+    plt.grid(True)
     if current_graph is None:
         messagebox.showwarning("Warning", "No graph loaded.")
         return
@@ -265,7 +270,6 @@ def show_shortest_path():
     else:
         PlotPath(current_graph, path)
 
-# Main GUI window
 root = tk.Tk()
 root.title("Graph Editor v3")
 

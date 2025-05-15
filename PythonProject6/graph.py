@@ -74,7 +74,7 @@ def Plot(g):
             dx = seg.destination.x - seg.origin.x
             dy = seg.destination.y - seg.origin.y
 
-            # Dibuixa la fletxa amb plt.arrow
+
             plt.arrow(start_x, start_y, dx, dy,length_includes_head=True, head_width=0.5, head_length=0.5, color='k')
 
     # Dibuixa els segments i col·loca el cost al mig
@@ -199,6 +199,7 @@ def SaveGraphToFile(g, filename):
     except Exception as e:
         print("Error saving graph to file:", e)
         return False
+
 def ReachableNodes(g, originNode):
     origin = None
     destination = None
@@ -213,5 +214,6 @@ def ReachableNodes(g, originNode):
         origin.neighbors.append(destination)
     else:
         origin.neighbors = [destination]
+
 
 

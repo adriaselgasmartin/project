@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
-from graph import Graph, LoadGraphFromFile, SaveGraphToFile, AddNode, AddSegment, RemoveNode, Plot, PlotNode
+from graph import *
 from test_graph import CreateGraph_1, CreateGraph_2
 from node import Node
 from path import Reachability, FindShortestPath, PlotPath
 from airSpace import AirSpace
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 current_graph = None
 
 
@@ -13,13 +16,19 @@ current_graph = None
 def show_example_graph():
     global current_graph
     current_graph = CreateGraph_1()
-    Plot(current_graph)
+    ax.clear()
+    Plot(current_graph, ax)
+    ax.grid(True)
+    canvas.draw()
 
 
 def show_invented_graph():
     global current_graph
     current_graph = CreateGraph_2()
-    Plot(current_graph)
+    ax.clear()
+    Plot(current_graph, ax)
+    ax.grid(True)
+    canvas.draw()
 
 
 def load_graph_from_file():
@@ -29,7 +38,10 @@ def load_graph_from_file():
         g = LoadGraphFromFile(file_path)
         if g is not None:
             current_graph = g
-            Plot(current_graph)
+            ax.clear()
+            Plot(current_graph, ax)
+            ax.grid(True)
+            canvas.draw()
         else:
             messagebox.showerror("Error", "Failed to load graph.")
 
@@ -65,7 +77,10 @@ def add_node():
         messagebox.showinfo("Success", "Node added.")
     else:
         messagebox.showwarning("Warning", "Node already exists.")
-    Plot(current_graph)
+    ax.clear()
+    Plot(current_graph, ax)
+    ax.grid(True)
+    canvas.draw()
 
 
 def add_segment():
@@ -80,7 +95,10 @@ def add_segment():
             messagebox.showinfo("Success", "Segment added.")
         else:
             messagebox.showerror("Error", "Failed to add segment. Check node names.")
-        Plot(current_graph)
+        ax.clear()
+        Plot(current_graph, ax)
+        ax.grid(True)
+        canvas.draw()
 
 
 def delete_node():
@@ -94,7 +112,10 @@ def delete_node():
             messagebox.showinfo("Success", "Node and related segments deleted.")
         else:
             messagebox.showerror("Error", "Node not found.")
-        Plot(current_graph)
+        ax.clear()
+        Plot(current_graph, ax)
+        ax.grid(True)
+        canvas.draw()
 
 
 def save_graph():
@@ -155,66 +176,122 @@ def design_graph():
     btn_save = tk.Button(design_win, text="Save Graph", command=save_graph)
     btn_save.pack(side=tk.LEFT, padx=5, pady=5)
 
-    canvas.bind("<Button-1>", canvas_click)
+    def on_click(event):
+        nonlocal selected_node
+        x, y = event.x, event.y
+        x, y = canvas.canvasx(x), canvas.canvasy(y)
+        for name, (nx, ny) in node_positions.items():
+            if abs(nx - x) < 10 and abs(ny - y) < 10:
+                selected_node = name
+                return
+        name = simpledialog.askstring("Node Name", "Enter name:", parent=design_win)
+        if name:
+            node = Node(name, x, y)
+            if AddNode(current_graph, node):
+                node_positions[name] = (x, y)
+                redraw()
+            else:
+                messagebox.showwarning("Warning", "Node already exists")
+
+
+
+    def on_drag(event):
+        nonlocal selected_node
+        if selected_node:
+            x, y = canvas.canvasx(event.x), canvas.canvasy(event.y)
+            node_positions[selected_node] = (x, y)
+            for node in current_graph.nodes:
+                if node.name == selected_node:
+                    node.x = x
+                    node.y = y
+            redraw()
+
+    def on_release(event):
+        nonlocal selected_node
+        selected_node = None
+
+    def redraw():
+        canvas.delete("all")
+        # Redibujar todos los segmentos
+        for seg in current_graph.segments:
+            if seg.origin.name in node_positions and seg.destination.name in node_positions:
+                x1, y1 = node_positions[seg.origin.name]
+                x2, y2 = node_positions[seg.destination.name]
+                canvas.create_line(x1, y1, x2, y2, fill="red")
+
+        # Redibujar todos los nodos
+        for name, (x, y) in node_positions.items():
+            canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
+            canvas.create_text(x + 10, y, text=name, fill="blue")
+
+    canvas.bind("<Button-1>", on_click)
+    canvas.bind("<B1-Motion>", on_drag)
+    canvas.bind("<ButtonRelease-1>", on_release)
 
 
 def show_reachability():
     global current_graph
-    reach=[]
-    plt.clf()
-    plt.grid(True)
+    reach = []
+    ax.clear()
 
     if current_graph is None:
         messagebox.showwarning("Warning", "No graph loaded.")
         return
+
     name = simpledialog.askstring("Input", "Enter origin node for reachability:")
     if not name:
         return
+
     reachable = Reachability(current_graph, name)
     if not reachable:
         messagebox.showinfo("Reachability", f"No nodes reachable from {name}.")
         return
+
     for node in current_graph.nodes:
-        plt.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='lightgray', markeredgecolor='gray')
-        plt.text(node.x, node.y, f' {node.name}', color='gray', fontsize=9)
+        ax.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='lightgray', markeredgecolor='gray')
+        ax.text(node.x, node.y, f' {node.name}', color='gray', fontsize=9)
 
     for node in current_graph.nodes:
         if node.name == name:
-            plt.plot(node.x, node.y, 'bo')
+            ax.plot(node.x, node.y, 'bo')
         elif node in reachable:
             reach.append(node)
-            plt.plot(node.x, node.y, 'go')
-        else:
-            plt.plot(node.x, node.y, 'o', markersize=4, markerfacecolor='none', markeredgecolor='none')
+            ax.plot(node.x, node.y, 'go')
 
     for seg in current_graph.segments:
-        if seg.origin.name == name and seg.destination in reachable or (seg.origin in reachable and seg.destination in reachable):
-            plt.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'r-')
+        if (seg.origin.name == name and seg.destination in reachable) or (seg.origin in reachable and seg.destination in reachable):
+            ax.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'r-')
 
-    plt.show()
-
+    ax.grid(True)
+    canvas.draw()
 
 def show_shortest_path():
     global current_graph
-    plt.clf()
-    plt.grid(True)
+    ax.clear()
+    ax.grid(True)
+    canvas.draw()
+
     if current_graph is None:
         messagebox.showwarning("Warning", "No graph loaded.")
         return
+
     origin = simpledialog.askstring("Input", "Enter origin node for shortest path:")
     destination = simpledialog.askstring("Input", "Enter destination node for shortest path:")
     if not origin or not destination:
         return
+
     path = FindShortestPath(current_graph, origin, destination)
     if not path:
         messagebox.showinfo("Shortest Path", f"No path from {origin} to {destination}.")
     else:
-        PlotPath(current_graph, path)
+        PlotPath(current_graph, path.nodes, ax=ax)  # Asegúrate que PlotPath acepte ax como parámetro
+        canvas.draw()
+
 
 def load_catalunya_data():
     air = AirSpace()
     global zona
-    zona= "Catalonia"
+    zona= "Catalunya"
     try:
         air.load_nav_points("Nav.txt")
         air.load_nav_segments("Seg.txt")
@@ -229,7 +306,7 @@ def load_catalunya_data():
 def load_espanya_data():
     air = AirSpace()
     global zona
-    zona= "Spain"
+    zona= "España"
     try:
         air.load_nav_points("ESP_NAV.txt")
         air.load_nav_segments("ESP_SEG.txt")
@@ -244,7 +321,7 @@ def load_espanya_data():
 def load_europa_data():
     air = AirSpace()
     global zona
-    zona ="Europe"
+    zona ="Europa"
     try:
         air.load_nav_points("EU_NAV.txt")
         air.load_nav_segments("EU_SEG.txt")
@@ -256,14 +333,12 @@ def load_europa_data():
         return None
 
 def plot_airspace(airspace: AirSpace):
-    fig, ax = plt.subplots()
+    ax.clear()  # Limpia antes de dibujar, no después
     id_to_point = {np.number: np for np in airspace.nav_points}
-
 
     for np in airspace.nav_points:
         ax.plot(np.longitude, np.latitude, 'co')
         ax.text(np.longitude, np.latitude, np.name, fontsize=5)
-
 
     for seg in airspace.nav_segments:
         if seg.origin_number in id_to_point and seg.destination_number in id_to_point:
@@ -271,14 +346,14 @@ def plot_airspace(airspace: AirSpace):
             dest = id_to_point[seg.destination_number]
             dx = dest.longitude - origin.longitude
             dy = dest.latitude - origin.latitude
-            plt.arrow(origin.longitude, origin.latitude, dx, dy,length_includes_head=True, head_width=0.07, head_length=0.07, color='c')
+            ax.arrow(origin.longitude, origin.latitude, dx, dy,
+                     length_includes_head=True, head_width=0.07, head_length=0.07, color='c')
 
-    ax.set_title("Airspace ")
-    plt.xlabel("Longitud")
-    plt.ylabel("Latitud")
-    plt.grid(True)
-    plt.show()
-airspace = None  # Variable global
+    fig.suptitle(f"Airspace - {zona}", fontsize=16)
+    ax.set_title(f"{airspace}", fontsize=12)
+    ax.grid(True)
+    canvas.draw()
+
 
 def cargar_y_mostrarcat():
     global airspace
@@ -316,7 +391,7 @@ def airspace_to_graph(airspace: AirSpace) -> Graph:
 
     for seg in airspace.nav_segments:
         if seg.origin_number in id_to_node and seg.destination_number in id_to_node:
-            AddSegment(g, id_to_node[seg.origin_number].name, id_to_node[seg.destination_number].name)
+            AddSegment(g,(id_to_node[seg.origin_number].name,id_to_node[seg.destination_number]), id_to_node[seg.origin_number].name, id_to_node[seg.destination_number].name)
 
     return g
 
@@ -374,54 +449,43 @@ def export_to_kml():
 
 root = tk.Tk()
 root.title("Graph Editor v3")
+root.geometry("1200x700")
 
-btn_example = tk.Button(root, text="Show Example Graph", width=30, command=show_example_graph)
-btn_example.pack(padx=5, pady=5)
+# Layout frames
+left_frame = tk.Frame(root, width=300)
+left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
 
-btn_invented = tk.Button(root, text="Show Invented Graph", width=30, command=show_invented_graph)
-btn_invented.pack(padx=5, pady=5)
+right_frame = tk.Frame(root)
+right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-btn_load = tk.Button(root, text="Load Graph from File", width=30, command=load_graph_from_file)
-btn_load.pack(padx=5, pady=5)
+# Matplotlib figure embedded in Tkinter
+fig = Figure(figsize=(6, 6), dpi=100)
+ax = fig.add_subplot(111)
+canvas = FigureCanvasTkAgg(fig, master=right_frame)
+canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-btn_neighbors = tk.Button(root, text="Show Neighbors of a Node", width=30, command=show_node_neighbors)
-btn_neighbors.pack(padx=5, pady=5)
+# Botons al panell esquerre
+botons = [
+    ("Show Example Graph", show_example_graph),
+    ("Show Invented Graph", show_invented_graph),
+    ("Load Graph from File", load_graph_from_file),
+    ("Save Graph to File", save_graph),
+    ("Add Node", add_node),
+    ("Add Segment", add_segment),
+    ("Delete Node", delete_node),
+    ("Design Graph Interactively", design_graph),
+    ("Show Neighbors of a Node", show_node_neighbors),
+    ("Show Reachability", show_reachability),
+    ("Show Shortest Path", show_shortest_path),
+    ("Load CAT Airspace data", cargar_y_mostrarcat),
+    ("Load ESP Airspace data", cargar_y_mostraresp),
+    ("Load EU Airspace data", cargar_y_mostrareu),
+    ("Exportar a Google Earth (KML)", export_to_kml),
+    ("Quit", root.quit)
+]
 
-btn_reach = tk.Button(root, text="Show Reachability", width=30, command=show_reachability)
-btn_reach.pack(padx=5, pady=5)
-
-btn_shortest = tk.Button(root, text="Show Shortest Path", width=30, command=show_shortest_path)
-btn_shortest.pack(padx=5, pady=5)
-
-btn_add_node = tk.Button(root, text="Add Node", width=30, command=add_node)
-btn_add_node.pack(padx=5, pady=5)
-
-btn_add_seg = tk.Button(root, text="Add Segment", width=30, command=add_segment)
-btn_add_seg.pack(padx=5, pady=5)
-
-btn_delete = tk.Button(root, text="Delete Node", width=30, command=delete_node)
-btn_delete.pack(padx=5, pady=5)
-
-btn_design = tk.Button(root, text="Design Graph Interactively", width=30, command=design_graph)
-btn_design.pack(padx=5, pady=5)
-
-btn_save = tk.Button(root, text="Save Graph to File", width=30, command=save_graph)
-btn_save.pack(padx=5, pady=5)
-
-btn_cat = tk.Button(root, text="Load CAT Airspace data", width=30, command=cargar_y_mostrarcat)
-btn_cat.pack(padx=5, pady=5)
-
-btn_esp = tk.Button(root, text="Load ESP Airspace data", width=30, command=cargar_y_mostraresp)
-btn_esp.pack(padx=5, pady=5)
-
-btn_eu = tk.Button(root, text="Load EU Airspace data", width=30, command=cargar_y_mostrareu)
-btn_eu.pack(padx=5, pady=5)
-
-btn_export_kml = tk.Button(root, text="Exportar a Google Earth (KML)", width=30, command=export_to_kml)
-btn_export_kml.pack(padx=5, pady=5)
-
-btn_quit = tk.Button(root, text="Quit", width=30, command=root.quit)
-btn_quit.pack(padx=5, pady=5)
-
+for text, cmd in botons:
+    b = tk.Button(left_frame, text=text, width=30, command=cmd)
+    b.pack(padx=5, pady=3, anchor='n')
 
 root.mainloop()

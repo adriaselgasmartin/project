@@ -39,27 +39,27 @@ def CostToNode(path, node, graph):
     return -1
 
 
-def PlotPath(graph, path):
-    if not path.nodes:
-        return False
+def PlotPath(graph, path, ax):
+    if not path:
+        return
+
     for node in graph.nodes:
-        plt.plot(node.x, node.y, 'o', markersize=5, markerfacecolor='lightgray', markeredgecolor='gray')
-        plt.text(node.x, node.y, f' {node.name}', color='gray', fontsize=9)
-    xs = [n.x for n in path.nodes]
-    ys = [n.y for n in path.nodes]
-    plt.plot(xs, ys, '-o', linewidth=2, markersize=6)
-    for origin, dest in zip(path.nodes, path.nodes[1:]):
-        seg = next((s for s in graph.segments if s.origin == origin and s.destination == dest), None)
-        if seg is not None:
-            mid_x = (origin.x + dest.x) / 2.0
-            mid_y = (origin.y + dest.y) / 2.0
-            plt.text(mid_x, mid_y, f'{seg.cost:.2f}', color='red', fontsize=9, ha='center', va='center')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title(f'Shortest Path: {path.nodes[0].name} -> {path.nodes[-1].name}')
-    plt.grid(True)
-    plt.show()
-    return True
+        ax.plot(node.x, node.y, 'ko', markersize=5)
+        ax.text(node.x, node.y, f' {node.name}', fontsize=8)
+
+    for seg in graph.segments:
+        ax.plot([seg.origin.x, seg.destination.x], [seg.origin.y, seg.destination.y], 'gray')
+
+    for i in range(len(path) - 1):
+        a, b = path[i], path[i + 1]
+        ax.plot([a.x, b.x], [a.y, b.y], 'r-', linewidth=2)
+
+    for p in path:
+        ax.plot(p.x, p.y, 'go', markersize=6)
+
+    ax.set_title(f'Shortest Path: {path[0].name} -> {path[-1].name}')
+    ax.grid(True)
+
 
 
 def Reachability(graph, nodeName):

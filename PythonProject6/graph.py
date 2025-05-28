@@ -16,7 +16,7 @@ def AddNode (g,n):       #esta funcion revisa si n ya pertenece a la lista g
         return True
 
 
-def AddSegment(g, nameOriginNode, nameDestinationNode):
+def AddSegment(g, trajecte, nameOriginNode, nameDestinationNode):
 
     origin = None
     destination = None
@@ -39,10 +39,10 @@ def AddSegment(g, nameOriginNode, nameDestinationNode):
     new_segment = Segment(seg_name, origin, destination)
     g.segments.append(new_segment)
 
-    if hasattr(origin, "neighbors"):
-        origin.neighbors.append(destination)
+    if hasattr(origin, "neighbours"):
+        origin.neighbours.append(destination)
     else:
-        origin.neighbors = [destination]
+        origin.neighbours = [destination]
 
     return True
 
@@ -62,34 +62,16 @@ def GetClosest(g, x, y):
 
     return closest_node
 
-def Plot(g):
-        # Dibuixa tots els nodes
-    for node in g.nodes:
-        plt.plot(node.x, node.y, 'bo')
-        plt.text(node.x, node.y, f' {node.name}', color='blue', fontsize=9)
+def Plot(graph, ax=None):
+    if ax is None:
+        fig, ax = plt.subplots()
+    for node in graph.nodes:
+        ax.plot(node.x, node.y, 'bo')
+        ax.text(node.x, node.y, f" {node.name}", fontsize=8)
+    for seg in graph.segments:
+        ax.arrow(seg.origin.x, seg.origin.y, seg.destination.x - seg.origin.x, seg.destination.y - seg.origin.y,
+                 length_includes_head=True, head_width=0.5, head_length=0.5, color='k')
 
-    for seg in g.segments:
-            # Calcula la diferència entre el destí i l'origen
-            start_x, start_y = seg.origin.x, seg.origin.y
-            dx = seg.destination.x - seg.origin.x
-            dy = seg.destination.y - seg.origin.y
-
-
-            plt.arrow(start_x, start_y, dx, dy,length_includes_head=True, head_width=0.5, head_length=0.5, color='k')
-
-    # Dibuixa els segments i col·loca el cost al mig
-    for seg in g.segments:
-        plt.plot([seg.origin.x, seg.destination.x],
-                 [seg.origin.y, seg.destination.y], 'k-')
-        mid_x = (seg.origin.x + seg.destination.x) / 2.0
-        mid_y = (seg.origin.y + seg.destination.y) / 2.0
-        plt.text(mid_x, mid_y, f'{seg.cost:.2f}', color='red', fontsize=9, ha='center', va='center')
-
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('Graph Plot')
-    plt.grid(True)
-    plt.show()
 
 
 def PlotNode(g, nameOrigin):
@@ -103,8 +85,8 @@ def PlotNode(g, nameOrigin):
     if origin is None:
         return False
 
-    # Si el node d'origen té atribut 'neighbors', els obtenim, sino es considera com a buida.
-    neighbors = origin.neighbors if hasattr(origin, "neighbors") else []
+    # Si el node d'origen té atribut 'neighbours', els obtenim, sino es considera com a buida.
+    neighbours = origin.neighbours if hasattr(origin, "neighbours") else []
 
     # Dibuixa tots els nodes amb colors segons la seva relació amb el node d'origen
     for node in g.nodes:
@@ -112,7 +94,7 @@ def PlotNode(g, nameOrigin):
             # Node d'origen en blau
             plt.plot(node.x, node.y, 'bo')
             plt.text(node.x, node.y, f' {node.name}', color='blue', fontsize=9)
-        elif node in neighbors:
+        elif node in neighbours:
             # Veïns en verd
             plt.plot(node.x, node.y, 'go')
             plt.text(node.x, node.y, f' {node.name}', color='green', fontsize=9)
@@ -123,7 +105,7 @@ def PlotNode(g, nameOrigin):
 
     # Dibuixa els segments que uneixen el node d'origen amb els seus veïns en vermell
     for seg in g.segments:
-        if seg.origin == origin and seg.destination in neighbors:
+        if seg.origin == origin and seg.destination in neighbours:
             plt.plot([seg.origin.x, seg.destination.x],
                      [seg.origin.y, seg.destination.y], 'r-')
             mid_x = (seg.origin.x + seg.destination.x) / 2.0
@@ -183,8 +165,8 @@ def RemoveNode(g, nodeName):
     g.nodes.remove(node_to_remove)
     g.segments = [seg for seg in g.segments if seg.origin != node_to_remove and seg.destination != node_to_remove]
     for node in g.nodes:
-        if node_to_remove in node.neighbors:
-            node.neighbors.remove(node_to_remove)
+        if node_to_remove in node.neighbours:
+            node.neighbours.remove(node_to_remove)
     return True
 
 def SaveGraphToFile(g, filename):
@@ -210,10 +192,10 @@ def ReachableNodes(g, originNode):
     if origin is None:
         return False
 
-    if hasattr(origin, "neighbors"):
-        origin.neighbors.append(destination)
+    if hasattr(origin, "neighbours"):
+        origin.neighbours.append(destination)
     else:
-        origin.neighbors = [destination]
+        origin.neighbours = [destination]
 
 
 

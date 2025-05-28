@@ -10,7 +10,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 current_graph = None
-
+design_frame = None  # Esto va fuera de cualquier función
 
 
 def show_example_graph():
@@ -133,67 +133,39 @@ def save_graph():
 
 
 def design_graph():
-    global current_graph
+    global current_graph, design_frame
+
+    # Cerrar diseño anterior si existe
+    if design_frame and design_frame.winfo_exists():
+        design_frame.destroy()
+
     current_graph = Graph()
 
-    design_win = tk.Toplevel(root)
-    design_win.title("Design Graph")
+    design_frame = tk.Frame(root, name="design_frame", bd=2, relief=tk.RIDGE)
+    design_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-    canvas = tk.Canvas(design_win, width=500, height=500, bg="white")
+    title_label = tk.Label(design_frame, text="Design Graph", font=("Arial", 14, "bold"))
+    title_label.pack(pady=5)
+
+    canvas = tk.Canvas(design_frame, width=500, height=500, bg="white")
     canvas.pack()
 
     node_positions = {}
-
-    def canvas_click(event):
-        name = simpledialog.askstring("Input", "Enter node name:", parent=design_win)
-        if name:
-            x, y = event.x, event.y
-            node = Node(name, x, y)
-            if AddNode(current_graph, node):
-                node_positions[name] = (x, y)
-                canvas.create_oval(x-5, y-5, x+5, y+5, fill="black")
-                canvas.create_text(x+10, y, text=name, fill="blue")
-            else:
-                messagebox.showwarning("Warning", "Node already exists.", parent=design_win)
-
-    def add_segment_design():
-        origin = simpledialog.askstring("Input", "Enter origin node name:", parent=design_win)
-        destination = simpledialog.askstring("Input", "Enter destination node name:", parent=design_win)
-        if origin and destination:
-            if AddSegment(current_graph, origin, origin, destination):
-                if origin in node_positions and destination in node_positions:
-                    x1, y1 = node_positions[origin]
-                    x2, y2 = node_positions[destination]
-                    canvas.create_line(x1, y1, x2, y2, fill="red")
-                else:
-                    messagebox.showwarning("Warning", "Node positions not found.", parent=design_win)
-            else:
-                messagebox.showerror("Error", "Failed to add segment.", parent=design_win)
-
-    btn_add_seg = tk.Button(design_win, text="Add Segment", command=add_segment_design)
-    btn_add_seg.pack(side=tk.LEFT, padx=5, pady=5)
-
-    btn_save = tk.Button(design_win, text="Save Graph", command=save_graph)
-    btn_save.pack(side=tk.LEFT, padx=5, pady=5)
+    selected_node = None
 
     def on_click(event):
         nonlocal selected_node
-        x, y = event.x, event.y
-        x, y = canvas.canvasx(x), canvas.canvasy(y)
+        x, y = canvas.canvasx(event.x), canvas.canvasy(event.y)
         for name, (nx, ny) in node_positions.items():
             if abs(nx - x) < 10 and abs(ny - y) < 10:
                 selected_node = name
                 return
-        name = simpledialog.askstring("Node Name", "Enter name:", parent=design_win)
+        name = simpledialog.askstring("Node Name", "Enter name:", parent=root)
         if name:
             node = Node(name, x, y)
             if AddNode(current_graph, node):
                 node_positions[name] = (x, y)
                 redraw()
-            else:
-                messagebox.showwarning("Warning", "Node already exists")
-
-
 
     def on_drag(event):
         nonlocal selected_node
@@ -212,17 +184,41 @@ def design_graph():
 
     def redraw():
         canvas.delete("all")
-        # Redibujar todos los segmentos
         for seg in current_graph.segments:
             if seg.origin.name in node_positions and seg.destination.name in node_positions:
                 x1, y1 = node_positions[seg.origin.name]
                 x2, y2 = node_positions[seg.destination.name]
                 canvas.create_line(x1, y1, x2, y2, fill="red")
-
-        # Redibujar todos los nodos
         for name, (x, y) in node_positions.items():
             canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
             canvas.create_text(x + 10, y, text=name, fill="blue")
+
+    def add_segment_design():
+        origin = simpledialog.askstring("Input", "Enter origin node name:", parent=root)
+        destination = simpledialog.askstring("Input", "Enter destination node name:", parent=root)
+        if origin and destination:
+            if AddSegment(current_graph, (origin, destination), origin, destination):
+                redraw()
+
+    def save():
+        save_graph()
+        messagebox.showinfo("Saved", "Graph saved successfully.", parent=root)
+
+    def close_design():
+        design_frame.destroy()
+        # Redibujar el gráfico principal si existe
+        if current_graph and current_graph.nodes:
+            ax.clear()
+            Plot(current_graph, ax)
+            ax.grid(True)
+            canvas.draw()
+
+    btn_frame = tk.Frame(design_frame)
+    btn_frame.pack(pady=5)
+
+    tk.Button(btn_frame, text="Add Segment", command=add_segment_design).pack(side=tk.LEFT, padx=5)
+    tk.Button(btn_frame, text="Save Graph", command=save).pack(side=tk.LEFT, padx=5)
+    tk.Button(btn_frame, text="Close Design", command=close_design).pack(side=tk.LEFT, padx=5)
 
     canvas.bind("<Button-1>", on_click)
     canvas.bind("<B1-Motion>", on_drag)

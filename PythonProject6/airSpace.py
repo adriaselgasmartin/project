@@ -2,7 +2,7 @@ from navPoint import NavPoint
 from navSegment import NavSegment
 from navAirport import NavAirport
 
-
+#Crea una clase que se llena de variables a partir de lectura de documentos txt
 class AirSpace:
     def __init__(self):
         self.nav_points = []

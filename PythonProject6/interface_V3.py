@@ -8,66 +8,7 @@ from airSpace import AirSpace
 import matplotlib.pyplot as plt
 current_graph = None
 
-def load_catalunya_data():
-    air = AirSpace()
-    try:
-        air.load_nav_points("Nav.txt")
-        air.load_nav_segments("Seg.txt")
-        air.load_airports("Aer.txt")
-        messagebox.showinfo("Datos cargados", "Datos de Catalunya cargados correctamente.")
-        return air
-    except Exception as e:
-        messagebox.showerror("Error al cargar", str(e))
-        return None
 
-def plot_airspace(airspace: AirSpace):
-    fig, ax = plt.subplots()
-    id_to_point = {np.number: np for np in airspace.nav_points}
-
-
-    for np in airspace.nav_points:
-        ax.plot(np.longitude, np.latitude, 'ko')
-        ax.text(np.longitude, np.latitude, np.name, fontsize=5)
-
-
-    for seg in airspace.nav_segments:
-        if seg.origin_number in id_to_point and seg.destination_number in id_to_point:
-            origin = id_to_point[seg.origin_number]
-            dest = id_to_point[seg.destination_number]
-            dx = dest.longitude - origin.longitude
-            dy = dest.latitude - origin.latitude
-            plt.arrow(origin.longitude, origin.latitude, dx, dy,length_includes_head=True, head_width=0.07, head_length=0.07, color='c')
-
-    ax.set_title("Airspace - Catalunya")
-    plt.xlabel("Longitud")
-    plt.ylabel("Latitud")
-    plt.grid(True)
-    plt.show()
-airspace = None  # Variable global
-
-def cargar_y_mostrar():
-    global airspace
-    global current_graph
-    airspace = load_catalunya_data()
-    current_graph = airspace_to_graph(airspace)
-    if airspace:
-        plot_airspace(airspace)
-
-
-def airspace_to_graph(airspace: AirSpace) -> Graph:
-    g = Graph()
-    id_to_node = {}
-
-    for navpoint in airspace.nav_points:
-        node = Node(navpoint.name, navpoint.longitude, navpoint.latitude)
-        AddNode(g, node)
-        id_to_node[navpoint.number] = node
-
-    for seg in airspace.nav_segments:
-        if seg.origin_number in id_to_node and seg.destination_number in id_to_node:
-            AddSegment(g, id_to_node[seg.origin_number].name, id_to_node[seg.destination_number].name)
-
-    return g
 
 def show_example_graph():
     global current_graph
@@ -270,6 +211,167 @@ def show_shortest_path():
     else:
         PlotPath(current_graph, path)
 
+def load_catalunya_data():
+    air = AirSpace()
+    global zona
+    zona= "Catalonia"
+    try:
+        air.load_nav_points("Nav.txt")
+        air.load_nav_segments("Seg.txt")
+        air.load_airports("Aer.txt")
+        messagebox.showinfo("Datos cargados", "Datos de Catalunya cargados correctamente.")
+        return air
+    except Exception as e:
+        messagebox.showerror("Error al cargar", str(e))
+
+        return None
+
+def load_espanya_data():
+    air = AirSpace()
+    global zona
+    zona= "Spain"
+    try:
+        air.load_nav_points("ESP_NAV.txt")
+        air.load_nav_segments("ESP_SEG.txt")
+        air.load_airports("ESP_AER.txt")
+        messagebox.showinfo("Datos cargados", "Datos de España cargados correctamente.")
+        return air
+    except Exception as e:
+        messagebox.showerror("Error al cargar", str(e))
+
+        return None
+
+def load_europa_data():
+    air = AirSpace()
+    global zona
+    zona ="Europe"
+    try:
+        air.load_nav_points("EU_NAV.txt")
+        air.load_nav_segments("EU_SEG.txt")
+        air.load_airports("EU_AER.txt")
+        messagebox.showinfo("Datos cargados", "Datos de Europa cargados correctamente.")
+        return air
+    except Exception as e:
+        messagebox.showerror("Error al cargar", str(e))
+        return None
+
+def plot_airspace(airspace: AirSpace):
+    fig, ax = plt.subplots()
+    id_to_point = {np.number: np for np in airspace.nav_points}
+
+
+    for np in airspace.nav_points:
+        ax.plot(np.longitude, np.latitude, 'co')
+        ax.text(np.longitude, np.latitude, np.name, fontsize=5)
+
+
+    for seg in airspace.nav_segments:
+        if seg.origin_number in id_to_point and seg.destination_number in id_to_point:
+            origin = id_to_point[seg.origin_number]
+            dest = id_to_point[seg.destination_number]
+            dx = dest.longitude - origin.longitude
+            dy = dest.latitude - origin.latitude
+            plt.arrow(origin.longitude, origin.latitude, dx, dy,length_includes_head=True, head_width=0.07, head_length=0.07, color='c')
+
+    ax.set_title("Airspace ")
+    plt.xlabel("Longitud")
+    plt.ylabel("Latitud")
+    plt.grid(True)
+    plt.show()
+airspace = None  # Variable global
+
+def cargar_y_mostrarcat():
+    global airspace
+    global current_graph
+    airspace = load_catalunya_data()
+    current_graph = airspace_to_graph(airspace)
+    if airspace:
+        plot_airspace(airspace)
+
+def cargar_y_mostraresp():
+    global airspace
+    global current_graph
+    airspace = load_espanya_data()
+    current_graph = airspace_to_graph(airspace)
+    if airspace:
+        plot_airspace(airspace)
+
+def cargar_y_mostrareu():
+    global airspace
+    global current_graph
+    airspace = load_europa_data()
+    current_graph = airspace_to_graph(airspace)
+    if airspace:
+        plot_airspace(airspace)
+
+
+def airspace_to_graph(airspace: AirSpace) -> Graph:
+    g = Graph()
+    id_to_node = {}
+
+    for navpoint in airspace.nav_points:
+        node = Node(navpoint.name, navpoint.longitude, navpoint.latitude)
+        AddNode(g, node)
+        id_to_node[navpoint.number] = node
+
+    for seg in airspace.nav_segments:
+        if seg.origin_number in id_to_node and seg.destination_number in id_to_node:
+            AddSegment(g, id_to_node[seg.origin_number].name, id_to_node[seg.destination_number].name)
+
+    return g
+
+def export_to_kml():
+    global airspace
+    if not airspace:
+        messagebox.showwarning("Advertencia", "No hay datos de espacio aéreo cargados.")
+        return
+
+    kml_path = filedialog.asksaveasfilename(
+        defaultextension=".kml",
+        filetypes=[("Google Earth KML", "*.kml")],
+        title="Guardar como archivo KML"
+    )
+
+    if not kml_path:
+        return
+
+    try:
+        with open(kml_path, 'w', encoding='utf-8') as f:
+            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+            f.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
+            f.write('<Document>\n')
+            f.write(f'  <name>Airspace - {zona}</name>\n')
+
+            # Puntos de navegación
+            for np in airspace.nav_points:
+                f.write('  <Placemark>\n')
+                f.write(f'    <name>{np.name}</name>\n')
+                f.write('    <Point>\n')
+                f.write(f'      <coordinates>{np.longitude},{np.latitude},0</coordinates>\n')
+                f.write('    </Point>\n')
+                f.write('  </Placemark>\n')
+
+            # Segmentos de navegación
+            id_to_point = {p.number: p for p in airspace.nav_points}
+            for seg in airspace.nav_segments:
+                if seg.origin_number in id_to_point and seg.destination_number in id_to_point:
+                    origin = id_to_point[seg.origin_number]
+                    dest = id_to_point[seg.destination_number]
+                    f.write('  <Placemark>\n')
+                    f.write('    <LineString>\n')
+                    f.write('      <coordinates>\n')
+                    f.write(f'        {origin.longitude},{origin.latitude},0 {dest.longitude},{dest.latitude},0\n')
+                    f.write('      </coordinates>\n')
+                    f.write('    </LineString>\n')
+                    f.write('  </Placemark>\n')
+
+            f.write('</Document>\n')
+            f.write('</kml>\n')
+
+        messagebox.showinfo("Éxito", f"KML exportado a {kml_path}")
+    except Exception as e:
+        messagebox.showerror("Error al exportar", str(e))
+
 root = tk.Tk()
 root.title("Graph Editor v3")
 
@@ -306,14 +408,20 @@ btn_design.pack(padx=5, pady=5)
 btn_save = tk.Button(root, text="Save Graph to File", width=30, command=save_graph)
 btn_save.pack(padx=5, pady=5)
 
-btn_cargar = tk.Button(root, text="Load Airspace data", width=30, command=cargar_y_mostrar)
-btn_cargar.pack(pady=5)
+btn_cat = tk.Button(root, text="Load CAT Airspace data", width=30, command=cargar_y_mostrarcat)
+btn_cat.pack(padx=5, pady=5)
+
+btn_esp = tk.Button(root, text="Load ESP Airspace data", width=30, command=cargar_y_mostraresp)
+btn_esp.pack(padx=5, pady=5)
+
+btn_eu = tk.Button(root, text="Load EU Airspace data", width=30, command=cargar_y_mostrareu)
+btn_eu.pack(padx=5, pady=5)
+
+btn_export_kml = tk.Button(root, text="Exportar a Google Earth (KML)", width=30, command=export_to_kml)
+btn_export_kml.pack(padx=5, pady=5)
 
 btn_quit = tk.Button(root, text="Quit", width=30, command=root.quit)
 btn_quit.pack(padx=5, pady=5)
-
-
-
 
 
 root.mainloop()
